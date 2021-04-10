@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Grommet, Box, DataTable } from 'grommet';
 
 export default () => (
@@ -20,6 +21,11 @@ export default () => (
             header: '',
             property: 'name',
             primary: false,
+            render: datum => (
+              <Box>
+                <Link to="/singlehabitview/1">{datum.name}</Link>
+              </Box>
+            ),
           },
           {
             header: 'Tue',

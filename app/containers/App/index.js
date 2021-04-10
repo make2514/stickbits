@@ -23,7 +23,7 @@ export default function App() {
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route exact path="/sandbox" component={Sandbox} />
-        <Route exact path="/singlehabitview" component={SingleHabitView} />
+        <Route path="/singlehabitview/:habitId" component={SingleHabitView} />
         <Route component={NotFoundPage} />
       </Switch>
       <GlobalStyle />
