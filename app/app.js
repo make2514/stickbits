@@ -11,6 +11,7 @@ import '@babel/polyfill';
 // Import all the third party stuff
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Grommet } from 'grommet';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import history from 'utils/history';
@@ -43,7 +44,9 @@ const render = messages => {
     <Provider store={store}>
       <LanguageProvider messages={messages}>
         <ConnectedRouter history={history}>
-          <App />
+          <Grommet full>
+            <App />
+          </Grommet>
         </ConnectedRouter>
       </LanguageProvider>
     </Provider>,
