@@ -8,6 +8,9 @@ import {
   AccordionPanel,
   List,
   Calendar,
+  Layer,
+  Button,
+  TextInput,
 } from 'grommet';
 import {
   MoreVertical,
@@ -53,12 +56,34 @@ const customAccordionTheme = {
   },
 };
 
-const CustomAccordionPanel = ({ label, clickHanlder }) => (
-  <Box direction="row" fill="horizontal" justify="between">
-    <Text size="medium">{label}</Text>
-    <Add onClick={clickHanlder} />
-  </Box>
-);
+const CustomAccordionPanel = ({ label, clickHandler }) => {
+  const [show, setShow] = React.useState();
+  const [newHabitLevel, setValue] = React.useState('');
+  return (
+    <Box direction="row" fill="horizontal" justify="between">
+      <Text size="medium">{label}</Text>
+      <Add
+        onClick={() => {
+          setShow(true);
+          clickHandler();
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder="type here"
+            value={newHabitLevel}
+            onChange={event => setValue(event.target.value)}
+          />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
 
 const CustomAccordion = ({ animate, multiple, customPanel, ...rest }) => (
   <Grommet style={{ width: '100%' }} theme={customAccordionTheme}>
@@ -83,7 +108,63 @@ const CustomAccordion = ({ animate, multiple, customPanel, ...rest }) => (
   </Grommet>
 );
 
-const EditIcon = () => <Edit />;
+const SingleHabitMoreVerticalIcon = () => {
+  const [show, setShow] = React.useState();
+  const [habitName, setValue] = React.useState('');
+  return (
+    <Box>
+      <MoreVertical
+        onClick={() => {
+          setShow(true);
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder="original habit name"
+            value={habitName}
+            onChange={event => setValue(event.target.value)}
+          />
+          <Button label="save" onClick={() => setShow(false)} />
+          <Button label="delete" onClick={() => setShow(false)} />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
+
+const EditIcon = () => {
+  const [show, setShow] = React.useState();
+  const [habitLevelActivity, setValue] = React.useState('');
+  return (
+    <Box>
+      <Edit
+        onClick={() => {
+          setShow(true);
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder="original habit level's activity"
+            value={habitLevelActivity}
+            onChange={event => setValue(event.target.value)}
+          />
+          <Button label="save" onClick={() => setShow(false)} />
+          <Button label="delete" onClick={() => setShow(false)} />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
 
 const habitLevelDetailsList = () => (
   <List
@@ -114,7 +195,7 @@ export default () => (
   >
     <Box align="stretch" justify="between" direction="row" fill="horizontal">
       <Text align="center">Habit 1</Text>
-      <MoreVertical />
+      {SingleHabitMoreVerticalIcon()}
     </Box>
     <Box align="start" justify="between" direction="row" fill="horizontal">
       <Text size="medium">
@@ -139,7 +220,7 @@ export default () => (
     />
     <CustomAccordion
       label="Gold level"
-      clickHanlder={() => {
+      clickHandler={() => {
         alert('Add Gold Level activity');
       }}
       dropDownContent={habitLevelDetailsList()}
@@ -150,7 +231,7 @@ export default () => (
 
 CustomAccordionPanel.propTypes = {
   label: PropTypes.string,
-  clickHanlder: PropTypes.func,
+  clickHandler: PropTypes.func,
 };
 
 CustomAccordion.propTypes = {
