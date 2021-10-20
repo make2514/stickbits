@@ -180,7 +180,11 @@ const habitLevelDetailsList = () => (
 );
 
 const analytics = () => (
-  <Calendar size="small" date={new Date().toISOString()} />
+  <Calendar
+    style={{ height: '200px' }}
+    size="small"
+    date={new Date().toISOString()}
+  />
 );
 
 export default () => (

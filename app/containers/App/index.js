@@ -11,7 +11,6 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 
 import HomePage from 'containers/HomePage/Loadable';
-import Sandbox from 'containers/Sandbox/Loadable';
 import SingleHabitView from 'containers/SingleHabitView/Loadable';
 import SingleHabitDailyView from 'containers/SingleHabitDailyView/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
@@ -23,7 +22,6 @@ export default function App() {
     <div>
       <Switch>
         <Route exact path="/" component={HomePage} />
-        <Route exact path="/sandbox" component={Sandbox} />
         <Route
           path="/singlehabitview/:habitId/:date"
           component={SingleHabitDailyView}
