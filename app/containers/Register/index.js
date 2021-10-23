@@ -1,5 +1,5 @@
 /*
- * Login Page
+ * Register Page
  */
 
 import React from 'react';
@@ -7,23 +7,31 @@ import { useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ErrorMessage } from '@hookform/error-message';
 
-import { Anchor, Box, TextInput, Button, FormField } from 'grommet';
+import { CheckBox, Box, TextInput, Button, FormField } from 'grommet';
 import Header from '../../components/Header';
 import { post } from '../../apis/generics';
 
-function LoginPage() {
+function RegisterPage() {
   // TODO: if there is access token in the localStorage, redirect user to home page
 
   const history = useHistory();
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showingPassword, setShowingPassword] = React.useState('');
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onClickLoginButton = () => {
-    post('login', { username, password })
+  const onClickRegisterButton = () => {
+    post('users', { username, password })
+      .then(({ message }) => {
+        if (message === 'User is created') {
+          return true;
+        }
+        throw new Error('User is not created');
+      })
+      .then(() => post('login', { username, password }))
       .then(({ token }) => {
         if (token) {
           localStorage.setItem('token', token);
@@ -35,14 +43,10 @@ function LoginPage() {
       });
   };
 
-  const goToRegisterPage = () => {
-    history.push('/register');
-  };
-
   return (
     <Box>
       <Header />
-      <form onSubmit={handleSubmit(onClickLoginButton)}>
+      <form onSubmit={handleSubmit(onClickRegisterButton)}>
         <FormField>
           <TextInput
             {...register('username', {
@@ -70,16 +74,20 @@ function LoginPage() {
             placeholder="password"
             value={password}
             onChange={event => setPassword(event.target.value)}
-            type="password"
+            type={showingPassword ? 'text' : 'password'}
           />
         </FormField>
+        <CheckBox
+          checked={showingPassword}
+          label="Show password"
+          onChange={event => setShowingPassword(event.target.checked)}
+        />
         <ErrorMessage errors={errors} name="password" />
         <br />
-        <Button type="submit" primary label="Login" />
-        <Anchor onClick={goToRegisterPage} label="Register" />
+        <Button type="submit" primary label="Register" />
       </form>
     </Box>
   );
 }
 
-export default LoginPage;
+export default RegisterPage;

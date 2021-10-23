@@ -14,6 +14,7 @@ import HomePage from 'containers/HomePage/Loadable';
 import SingleHabitView from 'containers/SingleHabitView/Loadable';
 import SingleHabitDailyView from 'containers/SingleHabitDailyView/Loadable';
 import LoginPage from 'containers/Login/Loadable';
+import RegisterPage from 'containers/Register/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
 
 import GlobalStyle from '../../global-styles';
@@ -24,6 +25,7 @@ export default function App() {
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route exact path="/login" component={LoginPage} />
+        <Route exact path="/register" component={RegisterPage} />
         <Route
           path="/singlehabitview/:habitId/:date"
           component={SingleHabitDailyView}
