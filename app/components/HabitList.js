@@ -23,7 +23,12 @@ export default () => (
             primary: false,
             render: datum => (
               <Box>
-                <Link to="/singlehabitview/1">{datum.name}</Link>
+                <Link
+                  style={{ textDecoration: 'none' }}
+                  to="/singlehabitview/1"
+                >
+                  {datum.name}
+                </Link>
               </Box>
             ),
           },
