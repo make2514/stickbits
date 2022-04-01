@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { Grommet, Box, DataTable } from 'grommet';
 import { get } from '../apis/generics';
 
 export default () => {
   const [habits, setHabits] = useState([]);
+  const history = useHistory();
 
   useEffect(() => {
     const mounted = true;
@@ -18,6 +19,7 @@ export default () => {
       })
       .catch(error => {
         console.log(error);
+        history.push('/login');
       });
   }, []);
 
