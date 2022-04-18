@@ -189,21 +189,21 @@ export default () => (
     background={{ color: 'graph-3' }}
   >
     <Box align="stretch" justify="between" direction="row" fill="horizontal">
-      <Text align="center">Habit 1</Text>
+      <Text align="center">Habit</Text>
       {SingleHabitMoreVerticalIcon()}
     </Box>
     <CustomAccordion
-      label="Bronze level"
+      label="Bronze level activities"
       dropDownContent={habitLevelDetailsList()}
       customPanel
     />
     <CustomAccordion
-      label="Silver level"
+      label="Silver level activities"
       dropDownContent={habitLevelDetailsList()}
       customPanel
     />
     <CustomAccordion
-      label="Gold level"
+      label="Gold level activities"
       clickHandler={() => {
         alert('Add Gold Level activity');
       }}

@@ -213,17 +213,17 @@ export default () => (
     </Box>
     <CustomAccordion label="Analytics" dropDownContent={analytics()} />
     <CustomAccordion
-      label="Bronze level"
+      label="Bronze level activities"
       dropDownContent={habitLevelDetailsList()}
       customPanel
     />
     <CustomAccordion
-      label="Silver level"
+      label="Silver level activities"
       dropDownContent={habitLevelDetailsList()}
       customPanel
     />
     <CustomAccordion
-      label="Gold level"
+      label="Gold level activities"
       clickHandler={() => {
         alert('Add Gold Level activity');
       }}

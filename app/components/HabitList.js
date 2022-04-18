@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { Grommet, Box, DataTable } from 'grommet';
+import { Checkmark, Close } from 'grommet-icons';
+import { subDays, format, isSameDay } from 'date-fns';
 import { get } from '../apis/generics';
 
 export default () => {
@@ -11,20 +13,74 @@ export default () => {
     const mounted = true;
     const token = localStorage.getItem('token');
 
-    get('habits', token)
+    const today = new Date();
+
+    get(`habits?endDate=${today}&startDate=${subDays(today, 4)}`, token)
       .then(habitsData => {
         if (mounted) {
           setHabits(habitsData);
         }
       })
-      .catch(error => {
-        console.log(error);
+      .catch(() => {
         history.push('/login');
       });
   }, []);
 
   function transformHabitData(habitsData) {
-    return habitsData.map(habit => habit);
+    // get the keys for the desired array element
+    const today = new Date();
+    const dateArray = [];
+    for (let i = 0; i < 4; i += 1) {
+      dateArray[i] = format(subDays(today, i), 'yyyy-MM-dd');
+    }
+
+    return habitsData.map(habit => {
+      const rowData = {};
+      // TODO: refactor this code
+      dateArray.forEach(date => {
+        rowData[date] =
+          habit.actions.length === 0
+            ? false
+            : habit.actions.filter(
+              action =>
+                action.timeEntries.filter(timeEntry =>
+                  isSameDay(new Date(timeEntry.date), new Date(date)),
+                ).length > 0,
+            ).length > 0;
+      });
+
+      return {
+        ...habit,
+        ...rowData,
+      };
+    });
+  }
+
+  function getHabitDataRows() {
+    const today = new Date();
+    const dateArray = [];
+    for (let i = 0; i < 4; i += 1) {
+      dateArray[i] = subDays(today, i);
+    }
+
+    return dateArray.map(date => {
+      const day = format(date, 'd');
+      const dayOfWeek = format(date, 'E');
+      return {
+        property: day,
+        header: (
+          <Box>
+            <Box>{dayOfWeek}</Box>
+            <Box>{day}</Box>
+          </Box>
+        ),
+        render: datum => (
+          <Box pad={{ vertical: 'xsmall' }}>
+            {datum[format(date, 'yyyy-MM-dd')] ? <Checkmark /> : <Close />}
+          </Box>
+        ),
+      };
+    });
   }
 
   return (
@@ -43,8 +99,8 @@ export default () => {
         <DataTable
           columns={[
             {
-              header: '',
               property: 'name',
+              header: '',
               primary: false,
               render: datum => (
                 <Box>
@@ -57,26 +113,7 @@ export default () => {
                 </Box>
               ),
             },
-            /* {
-              header: 'Tue',
-              property: 'day0',
-              primary: false,
-            },
-            {
-              property: 'day1',
-              header: 'Wed',
-              primary: false,
-            },
-            {
-              property: 'day2',
-              header: 'Thurs',
-              primary: false,
-            },
-            {
-              property: 'day3',
-              header: 'Fri',
-              primary: false,
-            }, */
+            ...getHabitDataRows(habits),
           ]}
           data={transformHabitData(habits)}
           fill="horizontal"
