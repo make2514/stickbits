@@ -3,7 +3,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { Grommet, Box, DataTable, Layer, Button, CheckBox } from 'grommet';
 import { Checkmark, Close } from 'grommet-icons';
 import { subDays, format, isSameDay } from 'date-fns';
-import { get } from '../apis/generics';
+import { get, post, deleteAPI } from '../apis/generics';
 
 export default () => {
   const [habits, setHabits] = useState([]);
@@ -16,16 +16,18 @@ export default () => {
 
     const today = new Date();
 
-    get(`habits?endDate=${today}&startDate=${subDays(today, 4)}`, token)
-      .then(habitsData => {
-        if (mounted) {
-          setHabits(habitsData);
-        }
-      })
-      .catch(() => {
-        history.push('/login');
-      });
-  }, []);
+    if (!selectedHabitData) {
+      get(`habits?endDate=${today}&startDate=${subDays(today, 4)}`, token)
+        .then(habitsData => {
+          if (mounted) {
+            setHabits(habitsData);
+          }
+        })
+        .catch(() => {
+          history.push('/login');
+        });
+    }
+  }, [selectedHabitData]);
 
   function transformHabitData(habitsData) {
     // get the keys for the desired array element
@@ -96,8 +98,60 @@ export default () => {
     });
   }
 
-  const ActionList = ({ onClockActionList, selectedHabitData }) => {
+  const ActionList = ({ onCloseActionList, selectedHabitData }) => {
     const actions = selectedHabitData ? selectedHabitData.habit.actions : {};
+
+    const ActionCheckBox = ({ action }) => {
+      const [checked, setChecked] = React.useState(
+        action.timeEntries.filter(timeEntry =>
+          isSameDay(
+            new Date(timeEntry.date),
+            new Date(selectedHabitData.selectedDate),
+          ),
+        ).length > 0,
+      );
+      const token = localStorage.getItem('token');
+
+      const addTimeEntryOfAnAction = () => {
+        post(`timeEntries`, token, {
+          actionId: action.id,
+          date: selectedHabitData.selectedDate,
+        })
+          .then(() => {
+            setChecked(true);
+          })
+          .catch(() => {
+            history.push('/login');
+          });
+      };
+
+      const deleteTimeEntryOfAnAction = () => {
+        deleteAPI(`timeEntries/`, token, {
+          actionId: action.id,
+          date: selectedHabitData.selectedDate,
+        })
+          .then(() => {
+            setChecked(false);
+          })
+          .catch(() => {
+            history.push('/login');
+          });
+      };
+
+      return (
+        <CheckBox
+          checked={checked}
+          onChange={() => {
+            if (checked) {
+              deleteTimeEntryOfAnAction();
+            } else {
+              addTimeEntryOfAnAction();
+            }
+          }}
+        />
+      );
+    };
+
     return (
       <Box>
         {selectedHabitData && (
@@ -105,24 +159,14 @@ export default () => {
             <Button
               label="close"
               onClick={() => {
-                onClockActionList();
+                onCloseActionList();
               }}
             />
             {actions.length > 0 &&
               actions.map(action => (
                 <Box key={action.id}>
                   {action.name}
-                  <CheckBox
-                    checked={
-                      action.timeEntries.filter(timeEntry =>
-                        isSameDay(
-                          new Date(timeEntry.date),
-                          new Date(selectedHabitData.selectedDate),
-                        ),
-                      ).length > 0
-                    }
-                    onChange={() => {}}
-                  />
+                  <ActionCheckBox action={action} />
                 </Box>
               ))}
           </Layer>
@@ -138,7 +182,7 @@ export default () => {
     });
   };
 
-  const onClockActionList = () => {
+  const onCloseActionList = () => {
     setSelectedHabitData(false);
   };
 
@@ -180,7 +224,7 @@ export default () => {
           sortable={false}
         />
         <ActionList
-          onClockActionList={onClockActionList}
+          onCloseActionList={onCloseActionList}
           selectedHabitData={selectedHabitData}
         />
       </Box>
