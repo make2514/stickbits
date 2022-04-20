@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { Grommet, Box, DataTable } from 'grommet';
+import { Grommet, Box, DataTable, Layer, Button } from 'grommet';
 import { Checkmark, Close } from 'grommet-icons';
 import { subDays, format, isSameDay } from 'date-fns';
 import { get } from '../apis/generics';
 
 export default () => {
   const [habits, setHabits] = useState([]);
+  const [selectedHabitData, setSelectedHabitData] = React.useState();
   const history = useHistory();
 
   useEffect(() => {
@@ -42,11 +43,11 @@ export default () => {
           habit.actions.length === 0
             ? false
             : habit.actions.filter(
-              action =>
-                action.timeEntries.filter(timeEntry =>
-                  isSameDay(new Date(timeEntry.date), new Date(date)),
-                ).length > 0,
-            ).length > 0;
+                action =>
+                  action.timeEntries.filter(timeEntry =>
+                    isSameDay(new Date(timeEntry.date), new Date(date)),
+                  ).length > 0,
+              ).length > 0;
       });
 
       return {
@@ -76,12 +77,53 @@ export default () => {
         ),
         render: datum => (
           <Box pad={{ vertical: 'xsmall' }}>
-            {datum[format(date, 'yyyy-MM-dd')] ? <Checkmark /> : <Close />}
+            {datum[format(date, 'yyyy-MM-dd')] ? (
+              <Checkmark
+                onClick={() => {
+                  onClickHabitDayStatus(datum);
+                }}
+              />
+            ) : (
+              <Close
+                onClick={() => {
+                  onClickHabitDayStatus(datum);
+                }}
+              />
+            )}
           </Box>
         ),
       };
     });
   }
+
+  const ActionList = ({ onClockActionList, selectedHabitData }) => {
+    const actions = selectedHabitData ? selectedHabitData.actions : {};
+
+    return (
+      <Box>
+        {selectedHabitData && (
+          <Layer>
+            <Button
+              label="close"
+              onClick={() => {
+                onClockActionList();
+              }}
+            />
+            {actions.length > 0 &&
+              actions.map(action => <Box key={action.id}>{action.name}</Box>)}
+          </Layer>
+        )}
+      </Box>
+    );
+  };
+
+  const onClickHabitDayStatus = datum => {
+    setSelectedHabitData(datum);
+  };
+
+  const onClockActionList = () => {
+    setSelectedHabitData(false);
+  };
 
   return (
     <Grommet full>
@@ -119,6 +161,10 @@ export default () => {
           fill="horizontal"
           replace={false}
           sortable={false}
+        />
+        <ActionList
+          onClockActionList={onClockActionList}
+          selectedHabitData={selectedHabitData}
         />
       </Box>
     </Grommet>
