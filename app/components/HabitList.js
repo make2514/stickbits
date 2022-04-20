@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { Grommet, Box, DataTable, Layer, Button } from 'grommet';
+import { Grommet, Box, DataTable, Layer, Button, CheckBox } from 'grommet';
 import { Checkmark, Close } from 'grommet-icons';
 import { subDays, format, isSameDay } from 'date-fns';
 import { get } from '../apis/generics';
@@ -80,13 +80,13 @@ export default () => {
             {datum[format(date, 'yyyy-MM-dd')] ? (
               <Checkmark
                 onClick={() => {
-                  onClickHabitDayStatus(datum);
+                  onClickHabitDayStatus(datum, format(date, 'yyyy-MM-dd'));
                 }}
               />
             ) : (
               <Close
                 onClick={() => {
-                  onClickHabitDayStatus(datum);
+                  onClickHabitDayStatus(datum, format(date, 'yyyy-MM-dd'));
                 }}
               />
             )}
@@ -97,8 +97,7 @@ export default () => {
   }
 
   const ActionList = ({ onClockActionList, selectedHabitData }) => {
-    const actions = selectedHabitData ? selectedHabitData.actions : {};
-
+    const actions = selectedHabitData ? selectedHabitData.habit.actions : {};
     return (
       <Box>
         {selectedHabitData && (
@@ -110,15 +109,33 @@ export default () => {
               }}
             />
             {actions.length > 0 &&
-              actions.map(action => <Box key={action.id}>{action.name}</Box>)}
+              actions.map(action => (
+                <Box key={action.id}>
+                  {action.name}
+                  <CheckBox
+                    checked={
+                      action.timeEntries.filter(timeEntry =>
+                        isSameDay(
+                          new Date(timeEntry.date),
+                          new Date(selectedHabitData.selectedDate),
+                        ),
+                      ).length > 0
+                    }
+                    onChange={() => {}}
+                  />
+                </Box>
+              ))}
           </Layer>
         )}
       </Box>
     );
   };
 
-  const onClickHabitDayStatus = datum => {
-    setSelectedHabitData(datum);
+  const onClickHabitDayStatus = (datum, selectedDate) => {
+    setSelectedHabitData({
+      habit: datum,
+      selectedDate,
+    });
   };
 
   const onClockActionList = () => {
