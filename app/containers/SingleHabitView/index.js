@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 import {
   Grommet,
   Box,
@@ -187,51 +188,53 @@ const analytics = () => (
   />
 );
 
-export default () => (
-  <Box
-    overflow="auto"
-    align="baseline"
-    flex
-    direction="column"
-    justify="between"
-    pad={{ horizontal: 'xsmall', vertical: 'xsmall' }}
-    background={{ color: 'graph-3' }}
-  >
-    <Box align="stretch" justify="between" direction="row" fill="horizontal">
-      <Text align="center">Habit 1</Text>
-      {SingleHabitMoreVerticalIcon()}
+const SingleHabitView = () => {
+  const { habit } = useLocation();
+  return (
+    <Box
+      overflow="auto"
+      align="baseline"
+      flex
+      direction="column"
+      justify="between"
+      pad={{ horizontal: 'xsmall', vertical: 'xsmall' }}
+      background={{ color: 'graph-3' }}
+    >
+      <Box align="stretch" justify="between" direction="row" fill="horizontal">
+        <Text align="center">{habit.name}</Text>
+        {SingleHabitMoreVerticalIcon()}
+      </Box>
+      <Box align="start" justify="between" direction="row" fill="horizontal">
+        <Text size="medium">
+          Overview
+          <Box>
+            <Text margin={{ left: 'small' }} align="center" size="small">
+              Current Streak: 0
+            </Text>
+          </Box>
+        </Text>
+      </Box>
+      <CustomAccordion label="Analytics" dropDownContent={analytics()} />
+      <CustomAccordion
+        label="Bronze level activities"
+        dropDownContent={habitLevelDetailsList()}
+        customPanel
+      />
+      <CustomAccordion
+        label="Silver level activities"
+        dropDownContent={habitLevelDetailsList()}
+        customPanel
+      />
+      <CustomAccordion
+        label="Gold level activities"
+        dropDownContent={habitLevelDetailsList()}
+        customPanel
+      />
     </Box>
-    <Box align="start" justify="between" direction="row" fill="horizontal">
-      <Text size="medium">
-        Overview
-        <Box>
-          <Text margin={{ left: 'small' }} align="center" size="small">
-            Current Streak: 0
-          </Text>
-        </Box>
-      </Text>
-    </Box>
-    <CustomAccordion label="Analytics" dropDownContent={analytics()} />
-    <CustomAccordion
-      label="Bronze level activities"
-      dropDownContent={habitLevelDetailsList()}
-      customPanel
-    />
-    <CustomAccordion
-      label="Silver level activities"
-      dropDownContent={habitLevelDetailsList()}
-      customPanel
-    />
-    <CustomAccordion
-      label="Gold level activities"
-      clickHandler={() => {
-        alert('Add Gold Level activity');
-      }}
-      dropDownContent={habitLevelDetailsList()}
-      customPanel
-    />
-  </Box>
-);
+  );
+};
+
+export default SingleHabitView;
 
 CustomAccordionPanel.propTypes = {
   label: PropTypes.string,

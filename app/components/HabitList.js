@@ -205,16 +205,22 @@ export default () => {
               property: 'name',
               header: '',
               primary: false,
-              render: datum => (
-                <Box>
-                  <Link
-                    style={{ textDecoration: 'none' }}
-                    to="/singlehabitview/1"
-                  >
-                    {datum.name}
-                  </Link>
-                </Box>
-              ),
+              render: habit => {
+                const pathWithHabitData = {
+                  pathname: `/singlehabitview/${habit.id}`,
+                  habit,
+                };
+                return (
+                  <Box>
+                    <Link
+                      style={{ textDecoration: 'none' }}
+                      to={pathWithHabitData}
+                    >
+                      {habit.name}
+                    </Link>
+                  </Box>
+                );
+              },
             },
             ...getHabitDataRows(habits),
           ]}
