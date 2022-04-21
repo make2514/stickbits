@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import {
   Grommet,
   Box,
@@ -20,6 +20,11 @@ import {
   AddCircle,
   Edit,
 } from 'grommet-icons';
+
+import ActionList from '../../components/ActionList';
+import { get } from '../../apis/generics';
+
+const token = localStorage.getItem('token');
 
 const customAccordionTheme = {
   global: {
@@ -179,30 +184,86 @@ const habitLevelDetailsList = () => (
     ]}
   />
 );
-const Analytics = habit => {
-  const [timeEntries, setTimeEntries] = React.useState(
-    habit.actions
-      .map(action => action.timeEntries)
-      .flat()
-      .map(timeEntry => timeEntry.date),
-  );
+const Analytics = ({ habit }) => {
+  const history = useHistory();
+  const getTimeEntriesDates = habit => {
+    if (habit) {
+      return habit.actions
+        .map(action => action.timeEntries)
+        .flat()
+        .map(timeEntry => timeEntry.date);
+    }
+    return [];
+  };
 
-  const onSelectHandler = () => {
+  const [timeEntries, setTimeEntries] = useState(getTimeEntriesDates(habit));
+  const [selectedDate, setSelectedDate] = useState('');
+  const [showActionList, setShowActionList] = useState(true);
+
+  if (!habit) {
+    return null;
+  }
+
+  const onSelectHandler = date => {
     setTimeEntries(timeEntries.slice());
+    setSelectedDate(date);
+    setShowActionList(true);
+  };
+
+  const onCloseActionList = () => {
+    get(`habits/${habit.id}`, token)
+      .then(habit => {
+        setTimeEntries(getTimeEntriesDates(habit).slice());
+        setShowActionList(false);
+      })
+      .catch(() => {
+        history.push('/login');
+      });
   };
 
   return (
-    <Calendar
-      style={{ height: '200px' }}
-      size="small"
-      dates={timeEntries}
-      onSelect={onSelectHandler}
-    />
+    <Box>
+      <Calendar
+        style={{ height: '200px' }}
+        size="small"
+        dates={timeEntries}
+        onSelect={onSelectHandler}
+        bounds={['1900-01-01', new Date().toISOString()]}
+      />
+      <ActionList
+        // onCloseActionList={onCloseActionList}
+        selectedHabitData={{
+          habit,
+          selectedDate,
+        }}
+        showActionList={showActionList}
+        onCloseActionList={onCloseActionList}
+      />
+    </Box>
   );
 };
 
 const SingleHabitView = () => {
   const { habit } = useLocation();
+  const [habitData, setHabitData] = useState();
+  const history = useHistory();
+
+  useEffect(() => {
+    const mounted = true;
+
+    if (!habitData) {
+      get(`habits/${habit.id}`, token)
+        .then(habitData => {
+          if (mounted) {
+            setHabitData(habitData);
+          }
+        })
+        .catch(() => {
+          history.push('/login');
+        });
+    }
+  }, [habitData]);
+
   return (
     <Box
       overflow="auto"
@@ -227,7 +288,10 @@ const SingleHabitView = () => {
           </Box>
         </Text>
       </Box>
-      <CustomAccordion label="Analytics" dropDownContent={Analytics(habit)} />
+      <CustomAccordion
+        label="Analytics"
+        dropDownContent={<Analytics habit={habitData} />}
+      />
       <CustomAccordion
         label="Bronze level activities"
         dropDownContent={habitLevelDetailsList()}

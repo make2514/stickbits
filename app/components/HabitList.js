@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { Grommet, Box, DataTable, Layer, Button, CheckBox } from 'grommet';
+import { Grommet, Box, DataTable } from 'grommet';
 import { Checkmark, Close } from 'grommet-icons';
 import { subDays, format, isSameDay } from 'date-fns';
-import { get, post, deleteAPI } from '../apis/generics';
+import { get } from '../apis/generics';
+
+import ActionList from './ActionList';
 
 export default () => {
   const [habits, setHabits] = useState([]);
-  const [selectedHabitData, setSelectedHabitData] = React.useState();
+  const [selectedHabitData, setSelectedHabitData] = useState();
+  const [showActionList, setShowActionList] = useState(true);
   const history = useHistory();
 
   useEffect(() => {
@@ -98,92 +101,17 @@ export default () => {
     });
   }
 
-  const ActionList = ({ onCloseActionList, selectedHabitData }) => {
-    const actions = selectedHabitData ? selectedHabitData.habit.actions : {};
-
-    const ActionCheckBox = ({ action }) => {
-      const [checked, setChecked] = React.useState(
-        action.timeEntries.filter(timeEntry =>
-          isSameDay(
-            new Date(timeEntry.date),
-            new Date(selectedHabitData.selectedDate),
-          ),
-        ).length > 0,
-      );
-      const token = localStorage.getItem('token');
-
-      const addTimeEntryOfAnAction = () => {
-        post(`timeEntries`, token, {
-          actionId: action.id,
-          date: selectedHabitData.selectedDate,
-        })
-          .then(() => {
-            setChecked(true);
-          })
-          .catch(() => {
-            history.push('/login');
-          });
-      };
-
-      const deleteTimeEntryOfAnAction = () => {
-        deleteAPI(`timeEntries/`, token, {
-          actionId: action.id,
-          date: selectedHabitData.selectedDate,
-        })
-          .then(() => {
-            setChecked(false);
-          })
-          .catch(() => {
-            history.push('/login');
-          });
-      };
-
-      return (
-        <CheckBox
-          checked={checked}
-          onChange={() => {
-            if (checked) {
-              deleteTimeEntryOfAnAction();
-            } else {
-              addTimeEntryOfAnAction();
-            }
-          }}
-        />
-      );
-    };
-
-    return (
-      <Box>
-        {selectedHabitData && (
-          <Layer>
-            <Button
-              label="close"
-              onClick={() => {
-                onCloseActionList();
-              }}
-            />
-            {actions.length > 0 &&
-              actions.map(action => (
-                <Box key={action.id}>
-                  {action.name}
-                  <ActionCheckBox action={action} />
-                </Box>
-              ))}
-          </Layer>
-        )}
-      </Box>
-    );
-  };
-
   const onClickHabitDayStatus = (datum, selectedDate) => {
     setSelectedHabitData({
       habit: datum,
       selectedDate,
     });
+    setShowActionList(true);
   };
 
   const onCloseActionList = () => {
     setSelectedHabitData(false);
+    setShowActionList(false);
   };
 
   return (
@@ -232,6 +160,7 @@ export default () => {
         <ActionList
           onCloseActionList={onCloseActionList}
           selectedHabitData={selectedHabitData}
+          showActionList={showActionList}
         />
       </Box>
     </Grommet>
