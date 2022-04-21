@@ -179,14 +179,27 @@ const habitLevelDetailsList = () => (
     ]}
   />
 );
+const Analytics = habit => {
+  const [timeEntries, setTimeEntries] = React.useState(
+    habit.actions
+      .map(action => action.timeEntries)
+      .flat()
+      .map(timeEntry => timeEntry.date),
+  );
 
-const analytics = () => (
-  <Calendar
-    style={{ height: '200px' }}
-    size="small"
-    date={new Date().toISOString()}
-  />
-);
+  const onSelectHandler = () => {
+    setTimeEntries(timeEntries.slice());
+  };
+
+  return (
+    <Calendar
+      style={{ height: '200px' }}
+      size="small"
+      dates={timeEntries}
+      onSelect={onSelectHandler}
+    />
+  );
+};
 
 const SingleHabitView = () => {
   const { habit } = useLocation();
@@ -214,7 +227,7 @@ const SingleHabitView = () => {
           </Box>
         </Text>
       </Box>
-      <CustomAccordion label="Analytics" dropDownContent={analytics()} />
+      <CustomAccordion label="Analytics" dropDownContent={Analytics(habit)} />
       <CustomAccordion
         label="Bronze level activities"
         dropDownContent={habitLevelDetailsList()}
