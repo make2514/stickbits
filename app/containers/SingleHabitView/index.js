@@ -164,7 +164,7 @@ const HabitLevelDetailsList = ({ actions }) => {
     </Box>
   );
 };
-const Analytics = ({ habit }) => {
+const Analytics = ({ habit, setHabitData }) => {
   const history = useHistory();
   const getTimeEntriesDates = habit => {
     if (habit) {
@@ -200,6 +200,7 @@ const Analytics = ({ habit }) => {
             isSameMonth(new Date(timeEntry), new Date(selectedDate)),
           ).flat(),
         );
+        setHabitData(habit);
         setShowActionList(false);
       })
       .catch(() => {
@@ -271,7 +272,7 @@ const SingleHabitView = props => {
         </Text>
       </Box>
       <Box>
-        <Analytics habit={habitData} />
+        <Analytics habit={habitData} setHabitData={setHabitData} />
         <HabitLevelDetailsList actions={habitData.actions} />
       </Box>
     </div>

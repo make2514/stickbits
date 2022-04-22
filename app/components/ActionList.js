@@ -17,7 +17,6 @@ const ActionList = ({
   ) {
     return null;
   }
-
   const actions = selectedHabitData ? selectedHabitData.habit.actions : {};
 
   const ActionCheckBox = ({ action }) => {
