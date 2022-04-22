@@ -13,13 +13,7 @@ import {
   Button,
   TextInput,
 } from 'grommet';
-import {
-  MoreVertical,
-  Add,
-  SubtractCircle,
-  AddCircle,
-  Edit,
-} from 'grommet-icons';
+import { Add, SubtractCircle, AddCircle, Edit } from 'grommet-icons';
 
 import ActionList from '../../components/ActionList';
 import { get } from '../../apis/generics';
@@ -66,7 +60,7 @@ const CustomAccordionPanel = ({ label, clickHandler }) => {
   const [show, setShow] = React.useState(true);
   const [newHabitLevel, setValue] = React.useState('');
   return (
-    <Box direction="row" fill="true" justify="between">
+    <Box direction="row" fill justify="between">
       <Text size="medium">{label}</Text>
       <Add
         onClick={() => {
@@ -113,35 +107,6 @@ const CustomAccordion = ({ animate, multiple, customPanel, ...rest }) => (
     </Box>
   </Grommet>
 );
-
-const SingleHabitMoreVerticalIcon = () => {
-  const [show, setShow] = React.useState();
-  const [habitName, setValue] = React.useState('');
-  return (
-    <Box>
-      <MoreVertical
-        onClick={() => {
-          setShow(true);
-        }}
-      />
-      {show && (
-        <Layer
-          onEsc={() => setShow(false)}
-          onClickOutside={() => setShow(false)}
-        >
-          <TextInput
-            placeholder="original habit name"
-            value={habitName}
-            onChange={event => setValue(event.target.value)}
-          />
-          <Button label="save" onClick={() => setShow(false)} />
-          <Button label="delete" onClick={() => setShow(false)} />
-          <Button label="close" onClick={() => setShow(false)} />
-        </Layer>
-      )}
-    </Box>
-  );
-};
 
 const EditIcon = () => {
   const [show, setShow] = React.useState();
@@ -235,9 +200,9 @@ const Analytics = ({ habit }) => {
   };
 
   return (
-    <Box>
+    <div>
       <Calendar
-        fill="true"
+        fill
         style={{ height: '200px' }}
         size="small"
         dates={timeEntries}
@@ -253,20 +218,19 @@ const Analytics = ({ habit }) => {
         showActionList={showActionList}
         onCloseActionList={onCloseActionList}
       />
-    </Box>
+    </div>
   );
 };
 
-const SingleHabitView = () => {
-  const { habit } = useLocation();
+const SingleHabitView = props => {
   const [habitData, setHabitData] = useState();
   const history = useHistory();
 
   useEffect(() => {
     const mounted = true;
-
+    const { habitId } = props.match.params;
     if (!habitData) {
-      get(`habits/${habit.id}`, token)
+      get(`habits/${habitId}`, token)
         .then(habitData => {
           if (mounted) {
             setHabitData(habitData);
@@ -278,21 +242,16 @@ const SingleHabitView = () => {
     }
   }, [habitData]);
 
+  if (!habitData) {
+    return null;
+  }
+
   return (
-    <Box
-      overflow="auto"
-      align="baseline"
-      flex
-      direction="column"
-      justify="between"
-      pad={{ horizontal: 'xsmall', vertical: 'xsmall' }}
-      background={{ color: 'graph-3' }}
-    >
-      <Box align="stretch" justify="between" direction="row" fill="true">
-        <Text align="center">{habit.name}</Text>
-        {SingleHabitMoreVerticalIcon()}
+    <div>
+      <Box align="stretch" justify="between" direction="row">
+        <Text align="center">{habitData.name}</Text>
       </Box>
-      <Box align="start" justify="between" direction="row" fill="true">
+      <Box align="start" justify="between" direction="row">
         <Text size="medium">
           Overview
           <Box>
@@ -302,13 +261,11 @@ const SingleHabitView = () => {
           </Box>
         </Text>
       </Box>
-      {habitData ? (
-        <Box>
-          <Analytics habit={habitData} />
-          <HabitLevelDetailsList actions={habitData.actions} />
-        </Box>
-      ) : null}
-    </Box>
+      <Box>
+        <Analytics habit={habitData} />
+        <HabitLevelDetailsList actions={habitData.actions} />
+      </Box>
+    </div>
   );
 };
 
