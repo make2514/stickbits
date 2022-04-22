@@ -63,10 +63,10 @@ const customAccordionTheme = {
 };
 
 const CustomAccordionPanel = ({ label, clickHandler }) => {
-  const [show, setShow] = React.useState();
+  const [show, setShow] = React.useState(true);
   const [newHabitLevel, setValue] = React.useState('');
   return (
-    <Box direction="row" fill="horizontal" justify="between">
+    <Box direction="row" fill="true" justify="between">
       <Text size="medium">{label}</Text>
       <Add
         onClick={() => {
@@ -172,18 +172,31 @@ const EditIcon = () => {
   );
 };
 
-const habitLevelDetailsList = () => (
-  <List
-    primaryKey="name"
-    secondaryKey="edit"
-    data={[
-      { name: "habit level's detail 1", edit: EditIcon() },
-      { name: "habit level's detail 2", edit: EditIcon() },
-      { name: "habit level's detail 3", edit: EditIcon() },
-      { name: "habit level's detail 4", edit: EditIcon() },
-    ]}
-  />
-);
+const HabitLevelDetailsList = ({ actions }) => {
+  const ListOfActions = ({ actionLevel }) => (
+    <div>
+      <Text weight="bold">{actionLevel} level actions</Text>
+      <List
+        primaryKey={action => <Text key={action.id}>{action.name}</Text>}
+        secondaryKey="edit"
+        data={actions
+          .filter(action => action.level === actionLevel)
+          .map(({ name, id }) => ({
+            name,
+            id,
+            edit: EditIcon(),
+          }))}
+      />
+    </div>
+  );
+  return (
+    <Box>
+      <ListOfActions actionLevel="Gold" />
+      <ListOfActions actionLevel="Silver" />
+      <ListOfActions actionLevel="Bronze" />
+    </Box>
+  );
+};
 const Analytics = ({ habit }) => {
   const history = useHistory();
   const getTimeEntriesDates = habit => {
@@ -224,6 +237,7 @@ const Analytics = ({ habit }) => {
   return (
     <Box>
       <Calendar
+        fill="true"
         style={{ height: '200px' }}
         size="small"
         dates={timeEntries}
@@ -274,11 +288,11 @@ const SingleHabitView = () => {
       pad={{ horizontal: 'xsmall', vertical: 'xsmall' }}
       background={{ color: 'graph-3' }}
     >
-      <Box align="stretch" justify="between" direction="row" fill="horizontal">
+      <Box align="stretch" justify="between" direction="row" fill="true">
         <Text align="center">{habit.name}</Text>
         {SingleHabitMoreVerticalIcon()}
       </Box>
-      <Box align="start" justify="between" direction="row" fill="horizontal">
+      <Box align="start" justify="between" direction="row" fill="true">
         <Text size="medium">
           Overview
           <Box>
@@ -288,25 +302,12 @@ const SingleHabitView = () => {
           </Box>
         </Text>
       </Box>
-      <CustomAccordion
-        label="Analytics"
-        dropDownContent={<Analytics habit={habitData} />}
-      />
-      <CustomAccordion
-        label="Bronze level activities"
-        dropDownContent={habitLevelDetailsList()}
-        customPanel
-      />
-      <CustomAccordion
-        label="Silver level activities"
-        dropDownContent={habitLevelDetailsList()}
-        customPanel
-      />
-      <CustomAccordion
-        label="Gold level activities"
-        dropDownContent={habitLevelDetailsList()}
-        customPanel
-      />
+      {habitData ? (
+        <Box>
+          <Analytics habit={habitData} />
+          <HabitLevelDetailsList actions={habitData.actions} />
+        </Box>
+      ) : null}
     </Box>
   );
 };
