@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { isSameMonth } from 'date-fns';
+import _ from 'lodash';
 import {
   Grommet,
   Box,
@@ -191,7 +193,13 @@ const Analytics = ({ habit }) => {
   const onCloseActionList = () => {
     get(`habits/${habit.id}`, token)
       .then(habit => {
-        setTimeEntries(getTimeEntriesDates(habit).slice());
+        // get currently viewed month
+        // put timeEntries of the month to the beginning of the timeEntries array
+        setTimeEntries(
+          _.partition(getTimeEntriesDates(habit), timeEntry =>
+            isSameMonth(new Date(timeEntry), new Date(selectedDate)),
+          ).flat(),
+        );
         setShowActionList(false);
       })
       .catch(() => {
@@ -202,6 +210,8 @@ const Analytics = ({ habit }) => {
   return (
     <div>
       <Calendar
+        daysOfWeek
+        firstDayOfWeek={1}
         fill
         style={{ height: '200px' }}
         size="small"
@@ -210,7 +220,6 @@ const Analytics = ({ habit }) => {
         bounds={['1900-01-01', new Date().toISOString()]}
       />
       <ActionList
-        // onCloseActionList={onCloseActionList}
         selectedHabitData={{
           habit,
           selectedDate,
