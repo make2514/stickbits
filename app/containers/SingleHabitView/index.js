@@ -18,7 +18,7 @@ import {
 import { Add, SubtractCircle, AddCircle, Edit } from 'grommet-icons';
 
 import ActionList from '../../components/ActionList';
-import { get } from '../../apis/generics';
+import { get, put, deleteAPI } from '../../apis/generics';
 
 const token = localStorage.getItem('token');
 
@@ -110,9 +110,29 @@ const CustomAccordion = ({ animate, multiple, customPanel, ...rest }) => (
   </Grommet>
 );
 
-const EditIcon = () => {
-  const [show, setShow] = React.useState();
-  const [habitLevelActivity, setValue] = React.useState('');
+const EditIcon = ({
+  originalValue,
+  id,
+  onChangingHabitRelatedData,
+  habitId,
+}) => {
+  const [show, setShow] = useState();
+  const [actionNewName, setActionNewName] = useState('');
+
+  const onSaveHandler = () => {
+    put(`actions/${id}`, token, { name: actionNewName }).then(() => {
+      onChangingHabitRelatedData(habitId);
+      setShow(false);
+    });
+  };
+
+  const onDeleteHandler = () => {
+    deleteAPI(`actions/${id}`, token).then(() => {
+      onChangingHabitRelatedData(habitId);
+      setShow(false);
+    });
+  };
+
   return (
     <Box>
       <Edit
@@ -126,12 +146,12 @@ const EditIcon = () => {
           onClickOutside={() => setShow(false)}
         >
           <TextInput
-            placeholder="original habit level's activity"
-            value={habitLevelActivity}
-            onChange={event => setValue(event.target.value)}
+            placeholder={originalValue}
+            value={actionNewName}
+            onChange={event => setActionNewName(event.target.value)}
           />
-          <Button label="save" onClick={() => setShow(false)} />
-          <Button label="delete" onClick={() => setShow(false)} />
+          <Button label="save" onClick={onSaveHandler} />
+          <Button label="delete" onClick={onDeleteHandler} />
           <Button label="close" onClick={() => setShow(false)} />
         </Layer>
       )}
@@ -139,7 +159,7 @@ const EditIcon = () => {
   );
 };
 
-const HabitLevelDetailsList = ({ actions }) => {
+const HabitLevelDetailsList = ({ actions, onChangingHabitRelatedData }) => {
   const ListOfActions = ({ actionLevel }) => (
     <div>
       <Text weight="bold">{actionLevel} level actions</Text>
@@ -148,10 +168,17 @@ const HabitLevelDetailsList = ({ actions }) => {
         secondaryKey="edit"
         data={actions
           .filter(action => action.level === actionLevel)
-          .map(({ name, id }) => ({
+          .map(({ name, id, habit }) => ({
             name,
             id,
-            edit: EditIcon(),
+            edit: (
+              <EditIcon
+                originalValue={name}
+                onChangingHabitRelatedData={onChangingHabitRelatedData}
+                id={id}
+                habitId={habit}
+              />
+            ),
           }))}
       />
     </div>
@@ -176,7 +203,6 @@ const Analytics = ({ habit, setHabitData }) => {
     return [];
   };
 
-  const [timeEntries, setTimeEntries] = useState(getTimeEntriesDates(habit));
   const [selectedDate, setSelectedDate] = useState('');
   const [showActionList, setShowActionList] = useState(true);
 
@@ -185,7 +211,6 @@ const Analytics = ({ habit, setHabitData }) => {
   }
 
   const onSelectHandler = date => {
-    setTimeEntries(timeEntries.slice());
     setSelectedDate(date);
     setShowActionList(true);
   };
@@ -193,13 +218,6 @@ const Analytics = ({ habit, setHabitData }) => {
   const onCloseActionList = () => {
     get(`habits/${habit.id}`, token)
       .then(habit => {
-        // get currently viewed month
-        // put timeEntries of the month to the beginning of the timeEntries array
-        setTimeEntries(
-          _.partition(getTimeEntriesDates(habit), timeEntry =>
-            isSameMonth(new Date(timeEntry), new Date(selectedDate)),
-          ).flat(),
-        );
         setHabitData(habit);
         setShowActionList(false);
       })
@@ -216,7 +234,9 @@ const Analytics = ({ habit, setHabitData }) => {
         fill
         style={{ height: '200px' }}
         size="small"
-        dates={timeEntries}
+        dates={_.partition(getTimeEntriesDates(habit), timeEntry =>
+          isSameMonth(new Date(timeEntry), new Date(selectedDate)),
+        ).flat()}
         onSelect={onSelectHandler}
         bounds={['1900-01-01', new Date().toISOString()]}
       />
@@ -235,6 +255,16 @@ const Analytics = ({ habit, setHabitData }) => {
 const SingleHabitView = props => {
   const [habitData, setHabitData] = useState();
   const history = useHistory();
+
+  const onChangingHabitRelatedData = habitId => {
+    get(`habits/${habitId}`, token)
+      .then(habit => {
+        setHabitData(habit);
+      })
+      .catch(() => {
+        history.push('/login');
+      });
+  };
 
   useEffect(() => {
     const mounted = true;
@@ -273,7 +303,10 @@ const SingleHabitView = props => {
       </Box>
       <Box>
         <Analytics habit={habitData} setHabitData={setHabitData} />
-        <HabitLevelDetailsList actions={habitData.actions} />
+        <HabitLevelDetailsList
+          actions={habitData.actions}
+          onChangingHabitRelatedData={onChangingHabitRelatedData}
+        />
       </Box>
     </div>
   );
