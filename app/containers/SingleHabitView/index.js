@@ -1,114 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 import { isSameMonth } from 'date-fns';
 import _ from 'lodash';
-import {
-  Grommet,
-  Box,
-  Text,
-  Accordion,
-  AccordionPanel,
-  List,
-  Calendar,
-  Layer,
-  Button,
-  TextInput,
-} from 'grommet';
-import { Add, SubtractCircle, AddCircle, Edit } from 'grommet-icons';
+import { Box, Text, List, Calendar, Layer, Button, TextInput } from 'grommet';
+import { Add, Edit } from 'grommet-icons';
 
 import ActionList from '../../components/ActionList';
-import { get, put, deleteAPI } from '../../apis/generics';
+import { get, put, deleteAPI, post } from '../../apis/generics';
 
 const token = localStorage.getItem('token');
-
-const customAccordionTheme = {
-  global: {
-    font: {
-      family: `-apple-system,
-       BlinkMacSystemFont, 
-       "Segoe UI", 
-       Roboto`,
-    },
-  },
-  accordion: {
-    heading: {
-      level: 3,
-      margin: { vertical: '6px', horizontal: '24px' },
-    },
-    hover: {
-      heading: {
-        color: 'accent-2',
-      },
-    },
-    icons: {
-      collapse: SubtractCircle,
-      expand: AddCircle,
-      color: 'hotpink',
-    },
-    border: undefined,
-    panel: {
-      // border: {
-      //   side: 'horizontal',
-      //   size: 'medium',
-      //   color: '#DADADA',
-      //   style: 'dotted',
-      // }
-    },
-  },
-};
-
-const CustomAccordionPanel = ({ label, clickHandler }) => {
-  const [show, setShow] = React.useState(true);
-  const [newHabitLevel, setValue] = React.useState('');
-  return (
-    <Box direction="row" fill justify="between">
-      <Text size="medium">{label}</Text>
-      <Add
-        onClick={() => {
-          setShow(true);
-          clickHandler();
-        }}
-      />
-      {show && (
-        <Layer
-          onEsc={() => setShow(false)}
-          onClickOutside={() => setShow(false)}
-        >
-          <TextInput
-            placeholder="type here"
-            value={newHabitLevel}
-            onChange={event => setValue(event.target.value)}
-          />
-          <Button label="close" onClick={() => setShow(false)} />
-        </Layer>
-      )}
-    </Box>
-  );
-};
-
-const CustomAccordion = ({ animate, multiple, customPanel, ...rest }) => (
-  <Grommet style={{ width: '100%' }} theme={customAccordionTheme}>
-    <Box {...rest} justify="center">
-      <Accordion animate={animate} multiple>
-        <AccordionPanel
-          label={
-            customPanel ? (
-              <CustomAccordionPanel {...rest} />
-            ) : (
-              <Text size="medium">{rest.label}</Text>
-            )
-          }
-        >
-          <Box background="light-2" height="small">
-            {/* Render list of certain habit level's detail */}
-            {rest.dropDownContent}
-          </Box>
-        </AccordionPanel>
-      </Accordion>
-    </Box>
-  </Grommet>
-);
 
 const EditIcon = ({
   originalValue,
@@ -159,10 +59,69 @@ const EditIcon = ({
   );
 };
 
-const HabitLevelDetailsList = ({ actions, onChangingHabitRelatedData }) => {
+const AddActionIcon = ({
+  habitId,
+  onChangingHabitRelatedData,
+  actionLevel,
+}) => {
+  const [show, setShow] = useState();
+  const [actionNewName, setActionNewName] = useState('');
+
+  const onSaveHandler = () => {
+    if (!actionNewName.trim()) {
+      // TODO: show message stating that action name has to be more than 1 character
+      return;
+    }
+    post(`actions`, token, {
+      name: actionNewName,
+      habitId,
+      level: actionLevel,
+    }).then(() => {
+      onChangingHabitRelatedData(habitId);
+      setShow(false);
+    });
+  };
+
+  return (
+    <Box>
+      <Add
+        onClick={() => {
+          setShow(true);
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder="Name of the action"
+            value={actionNewName}
+            onChange={event => setActionNewName(event.target.value)}
+          />
+          <Button label="save" onClick={onSaveHandler} />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
+
+const HabitLevelDetailsList = ({
+  habitId,
+  actions,
+  onChangingHabitRelatedData,
+}) => {
   const ListOfActions = ({ actionLevel }) => (
     <div>
-      <Text weight="bold">{actionLevel} level actions</Text>
+      <Box direction="row" justify="between">
+        <Text weight="bold">{actionLevel} level actions</Text>
+        <AddActionIcon
+          habitId={habitId}
+          onChangingHabitRelatedData={onChangingHabitRelatedData}
+          actionLevel={actionLevel}
+        />
+      </Box>
       <List
         primaryKey={action => <Text key={action.id}>{action.name}</Text>}
         secondaryKey="edit"
@@ -304,6 +263,7 @@ const SingleHabitView = props => {
       <Box>
         <Analytics habit={habitData} setHabitData={setHabitData} />
         <HabitLevelDetailsList
+          habitId={habitData.id}
           actions={habitData.actions}
           onChangingHabitRelatedData={onChangingHabitRelatedData}
         />
@@ -313,14 +273,3 @@ const SingleHabitView = props => {
 };
 
 export default SingleHabitView;
-
-CustomAccordionPanel.propTypes = {
-  label: PropTypes.string,
-  clickHandler: PropTypes.func,
-};
-
-CustomAccordion.propTypes = {
-  animate: PropTypes.bool,
-  multiple: PropTypes.bool,
-  customPanel: PropTypes.bool,
-};
