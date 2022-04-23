@@ -10,7 +10,7 @@ import { get, put, deleteAPI, post } from '../../apis/generics';
 
 const token = localStorage.getItem('token');
 
-const EditIcon = ({
+const EditActionIcon = ({
   originalValue,
   id,
   onChangingHabitRelatedData,
@@ -49,6 +49,50 @@ const EditIcon = ({
             placeholder={originalValue}
             value={actionNewName}
             onChange={event => setActionNewName(event.target.value)}
+          />
+          <Button label="save" onClick={onSaveHandler} />
+          <Button label="delete" onClick={onDeleteHandler} />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
+
+const EditHabitIcon = ({ originalValue, id, onChangingHabitRelatedData }) => {
+  const history = useHistory();
+  const [show, setShow] = useState();
+  const [habitNewName, setHabitNewName] = useState('');
+
+  const onSaveHandler = () => {
+    put(`habits/${id}`, token, { name: habitNewName }).then(() => {
+      onChangingHabitRelatedData(id);
+      setShow(false);
+    });
+  };
+
+  const onDeleteHandler = () => {
+    deleteAPI(`habits/${id}`, token).then(() => {
+      history.push('/');
+    });
+  };
+
+  return (
+    <Box>
+      <Edit
+        onClick={() => {
+          setShow(true);
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder={originalValue}
+            value={habitNewName}
+            onChange={event => setHabitNewName(event.target.value)}
           />
           <Button label="save" onClick={onSaveHandler} />
           <Button label="delete" onClick={onDeleteHandler} />
@@ -131,7 +175,7 @@ const HabitLevelDetailsList = ({
             name,
             id,
             edit: (
-              <EditIcon
+              <EditActionIcon
                 originalValue={name}
                 onChangingHabitRelatedData={onChangingHabitRelatedData}
                 id={id}
@@ -248,7 +292,12 @@ const SingleHabitView = props => {
   return (
     <div>
       <Box align="stretch" justify="between" direction="row">
-        <Text align="center">{habitData.name}</Text>
+        <Text align="center">Habit: {habitData.name}</Text>
+        <EditHabitIcon
+          id={habitData.id}
+          originalValue={habitData.name}
+          onChangingHabitRelatedData={onChangingHabitRelatedData}
+        />
       </Box>
       <Box align="start" justify="between" direction="row">
         <Text size="medium">
