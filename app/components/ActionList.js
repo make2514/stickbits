@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Box, Layer, Button, CheckBox } from 'grommet';
-import { isSameDay } from 'date-fns';
+import { Box, Layer, Button, CheckBox, Text } from 'grommet';
+import { isSameDay, format } from 'date-fns';
 import { post, deleteAPI } from '../apis/generics';
 
 const ActionList = ({
@@ -81,6 +81,10 @@ const ActionList = ({
               onCloseActionList();
             }}
           />
+          <Text>
+            Date:{' '}
+            {format(new Date(selectedHabitData.selectedDate), 'yyyy-MM-dd')}
+          </Text>
           {actions.length > 0 &&
             actions.map(action => (
               <Box key={action.id}>
