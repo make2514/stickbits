@@ -1,20 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { Grommet, Box, DataTable } from 'grommet';
-import { Checkmark, Close } from 'grommet-icons';
+import {
+  Box,
+  DataTable,
+  Header,
+  Text,
+  Layer,
+  TextInput,
+  Button,
+} from 'grommet';
+import { Checkmark, Close, Add, MoreVertical } from 'grommet-icons';
 import { subDays, format, isSameDay } from 'date-fns';
-import { get } from '../apis/generics';
+import { get, post } from '../apis/generics';
 
 import ActionList from './ActionList';
+
+const token = localStorage.getItem('token');
+
+const AddHabit = ({ onHabitsChange }) => {
+  const [show, setShow] = useState();
+  const [habitName, setHabitName] = useState('');
+  const [habitDescription, setHabitDescription] = useState('');
+
+  const onSaveHandler = () => {
+    if (!habitName.trim()) {
+      // TODO: show message stating that habit name has to be more than 1 character
+      return;
+    }
+    post(`habits`, token, {
+      name: habitName,
+      description: habitDescription,
+    }).then(() => {
+      setShow(false);
+      onHabitsChange();
+    });
+  };
+
+  return (
+    <Box>
+      <Add
+        onClick={() => {
+          setShow(true);
+        }}
+      />
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <TextInput
+            placeholder="Habit name"
+            value={habitName}
+            onChange={event => setHabitName(event.target.value)}
+          />
+          <TextInput
+            placeholder="Habit description"
+            value={habitDescription}
+            onChange={event => setHabitDescription(event.target.value)}
+          />
+          <Button label="create" onClick={onSaveHandler} />
+          <Button label="close" onClick={() => setShow(false)} />
+        </Layer>
+      )}
+    </Box>
+  );
+};
+
+const HomePageHeader = ({ onHabitsChange }) => (
+  <Header
+    align="baseline"
+    direction="row"
+    flex={false}
+    justify="between"
+    gap="medium"
+    pad="xsmall"
+    background={{ color: 'graph-3' }}
+  >
+    <Text>Time-wallet</Text>
+    <Box
+      align="center"
+      justify="between"
+      direction="row"
+      width="xsmall"
+      flex="shrink"
+    >
+      <AddHabit onHabitsChange={onHabitsChange} />
+      <MoreVertical />
+    </Box>
+  </Header>
+);
 
 export default () => {
   const [habits, setHabits] = useState([]);
   const [selectedHabitData, setSelectedHabitData] = useState();
   const [showActionList, setShowActionList] = useState(true);
+  const [updateHabits, setUpdateHabits] = useState(1);
   const history = useHistory();
 
+  const onHabitsChange = () => {
+    setUpdateHabits(updateHabits + 1);
+  };
+
   useEffect(() => {
-    const mounted = true;
+    let mounted = true;
     const token = localStorage.getItem('token');
 
     const today = new Date();
@@ -30,7 +118,10 @@ export default () => {
           history.push('/login');
         });
     }
-  }, [selectedHabitData]);
+    return () => {
+      mounted = false;
+    };
+  }, [selectedHabitData, updateHabits]);
 
   function transformHabitData(habitsData) {
     // get the keys for the desired array element
@@ -115,54 +206,43 @@ export default () => {
   };
 
   return (
-    <Grommet full>
-      <Box
-        fill="vertical"
-        overflow="auto"
-        align="center"
-        flex="grow"
-        pad="xsmall"
-        justify="start"
-        direction="column"
-        responsive
-        wrap
-      >
-        <DataTable
-          columns={[
-            {
-              property: 'name',
-              header: '',
-              primary: false,
-              render: habit => {
-                const pathWithHabitData = {
-                  pathname: `/singlehabitview/${habit.id}`,
-                  habit,
-                };
-                return (
-                  <Box>
-                    <Link
-                      style={{ textDecoration: 'none' }}
-                      to={pathWithHabitData}
-                    >
-                      {habit.name}
-                    </Link>
-                  </Box>
-                );
-              },
+    <div>
+      <HomePageHeader onHabitsChange={onHabitsChange} />
+      <DataTable
+        columns={[
+          {
+            property: 'name',
+            header: '',
+            primary: false,
+            render: habit => {
+              const pathWithHabitData = {
+                pathname: `/singlehabitview/${habit.id}`,
+                habit,
+              };
+              return (
+                <Box>
+                  <Link
+                    style={{ textDecoration: 'none' }}
+                    to={pathWithHabitData}
+                  >
+                    {habit.name}
+                  </Link>
+                </Box>
+              );
             },
-            ...getHabitDataRows(habits),
-          ]}
-          data={transformHabitData(habits)}
-          fill="horizontal"
-          replace={false}
-          sortable={false}
-        />
-        <ActionList
-          onCloseActionList={onCloseActionList}
-          selectedHabitData={selectedHabitData}
-          showActionList={showActionList}
-        />
-      </Box>
-    </Grommet>
+          },
+          ...getHabitDataRows(habits),
+        ]}
+        data={transformHabitData(habits)}
+        fill="horizontal"
+        replace={false}
+        sortable={false}
+      />
+      <ActionList
+        onCloseActionList={onCloseActionList}
+        selectedHabitData={selectedHabitData}
+        showActionList={showActionList}
+      />
+    </div>
   );
 };

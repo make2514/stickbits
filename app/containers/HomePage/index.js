@@ -8,7 +8,6 @@
 import React from 'react';
 
 import { Grommet, Box } from 'grommet';
-import Header from '../../components/Header';
 import HabitList from '../../components/HabitList';
 
 export default function HomePage() {
@@ -22,7 +21,6 @@ export default function HomePage() {
         direction="column"
         justify="start"
       >
-        <Header />
         <HabitList />
       </Box>
     </Grommet>
