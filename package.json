@@ -7,8 +7,8 @@
     "url": ""
   },
   "engines": {
-    "npm": ">=5",
-    "node": ">=8.15.1"
+    "npm": "6.14.15",
+    "node": "14.18.1"
   },
   "author": "Toan Nguyen",
   "license": "MIT",
