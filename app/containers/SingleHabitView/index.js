@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { isSameMonth } from 'date-fns';
+import { isSameDay, isSameMonth, subDays } from 'date-fns';
 import _ from 'lodash';
 import { Box, Text, List, Calendar, Layer, Button, TextInput } from 'grommet';
 import { Add, Edit } from 'grommet-icons';
@@ -206,6 +206,44 @@ const Analytics = ({ habit, setHabitData }) => {
     return [];
   };
 
+  const calculateCurrentStreak = () => {
+    const timeEntriesDates = getTimeEntriesDates(habit);
+    const today = new Date();
+    const yesterday = subDays(today, 1);
+    let currentSteak = 0;
+    let streakLastDate = yesterday;
+    const sortedTimeEntriesDates = timeEntriesDates
+      .sort(function(a, b) {
+        return new Date(b) - new Date(a);
+      })
+      .map(date => new Date(date));
+    const mostRecentDayHabitIsDone = sortedTimeEntriesDates[0];
+
+    if (isSameDay(mostRecentDayHabitIsDone, today)) {
+      streakLastDate = today;
+      sortedTimeEntriesDates.splice(0, 1);
+      currentSteak = 1;
+    } else if (isSameDay(mostRecentDayHabitIsDone, yesterday)) {
+      streakLastDate = yesterday;
+      sortedTimeEntriesDates.splice(0, 1);
+      currentSteak = 1;
+    } else {
+      return 0;
+    }
+
+    for (let i = 0; i < sortedTimeEntriesDates.length; i += 1) {
+      if (
+        isSameDay(sortedTimeEntriesDates[i], subDays(streakLastDate, i + 1))
+      ) {
+        currentSteak += 1;
+      }
+    }
+
+    console.log('...', currentSteak);
+    return currentSteak;
+  };
+  calculateCurrentStreak();
+
   const [selectedDate, setSelectedDate] = useState('');
   const [showActionList, setShowActionList] = useState(true);
 
@@ -231,6 +269,16 @@ const Analytics = ({ habit, setHabitData }) => {
 
   return (
     <div>
+      <Box align="start" justify="between" direction="row">
+        <Text size="medium">
+          Overview
+          <Box>
+            <Text margin={{ left: 'small' }} align="center" size="small">
+              Current Streak: {calculateCurrentStreak()}
+            </Text>
+          </Box>
+        </Text>
+      </Box>
       <Calendar
         daysOfWeek
         firstDayOfWeek={1}
@@ -298,16 +346,6 @@ const SingleHabitView = props => {
           originalValue={habitData.name}
           onChangingHabitRelatedData={onChangingHabitRelatedData}
         />
-      </Box>
-      <Box align="start" justify="between" direction="row">
-        <Text size="medium">
-          Overview
-          <Box>
-            <Text margin={{ left: 'small' }} align="center" size="small">
-              Current Streak: 0
-            </Text>
-          </Box>
-        </Text>
       </Box>
       <Box>
         <Analytics habit={habitData} setHabitData={setHabitData} />
