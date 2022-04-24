@@ -1,5 +1,10 @@
+let apiPath = 'http://localhost:3001/api';
+if (process.env.NODE_ENV === 'production') {
+  apiPath = process.env.BACKEND_PRODUCTION_PATH;
+}
+
 export function post(apiName, token, options) {
-  return fetch(`http://localhost:3001/api/${apiName}`, {
+  return fetch(`${apiPath}/${apiName}`, {
     method: 'post',
     headers: {
       Authorization: `bearer ${token}`,
@@ -11,7 +16,7 @@ export function post(apiName, token, options) {
 }
 
 export function put(apiName, token, options) {
-  return fetch(`http://localhost:3001/api/${apiName}`, {
+  return fetch(`${apiPath}/${apiName}`, {
     method: 'put',
     headers: {
       Authorization: `bearer ${token}`,
@@ -23,7 +28,7 @@ export function put(apiName, token, options) {
 }
 
 export function get(apiName, token) {
-  return fetch(`http://localhost:3001/api/${apiName}`, {
+  return fetch(`${apiPath}/${apiName}`, {
     method: 'get',
     headers: {
       Authorization: `bearer ${token}`,
@@ -34,7 +39,7 @@ export function get(apiName, token) {
 }
 
 export function deleteAPI(apiName, token, options) {
-  return fetch(`http://localhost:3001/api/${apiName}`, {
+  return fetch(`${apiPath}/${apiName}`, {
     method: 'delete',
     headers: {
       Authorization: `bearer ${token}`,
