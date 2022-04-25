@@ -27,10 +27,14 @@ const AddHabit = ({ onHabitsChange }) => {
       // TODO: show message stating that habit name has to be more than 1 character
       return;
     }
-    post(`habits`, token, {
-      name: habitName,
-      description: habitDescription,
-    }).then(() => {
+    post(
+      `habits`,
+      {
+        name: habitName,
+        description: habitDescription,
+      },
+      token,
+    ).then(() => {
       setShow(false);
       onHabitsChange();
     });

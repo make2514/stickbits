@@ -3,7 +3,18 @@ if (process.env.NODE_ENV === 'production') {
   apiPath = process.env.BACKEND_PRODUCTION_PATH;
 }
 
-export function post(apiName, token, options) {
+export function post(apiName, options, token) {
+  if (!token) {
+    return fetch(`${apiPath}/${apiName}`, {
+      method: 'post',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(options),
+    }).then(res => res.json());
+  }
+
   return fetch(`${apiPath}/${apiName}`, {
     method: 'post',
     headers: {

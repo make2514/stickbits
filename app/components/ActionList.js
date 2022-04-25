@@ -32,10 +32,14 @@ const ActionList = ({
     const token = localStorage.getItem('token');
 
     const addTimeEntryOfAnAction = () => {
-      post(`timeEntries`, token, {
-        actionId: action.id,
-        date: selectedHabitData.selectedDate,
-      })
+      post(
+        `timeEntries`,
+        {
+          actionId: action.id,
+          date: selectedHabitData.selectedDate,
+        },
+        token,
+      )
         .then(() => {
           setChecked(true);
         })

@@ -116,11 +116,15 @@ const AddActionIcon = ({
       // TODO: show message stating that action name has to be more than 1 character
       return;
     }
-    post(`actions`, token, {
-      name: actionNewName,
-      habitId,
-      level: actionLevel,
-    }).then(() => {
+    post(
+      `actions`,
+      {
+        name: actionNewName,
+        habitId,
+        level: actionLevel,
+      },
+      token,
+    ).then(() => {
       onChangingHabitRelatedData(habitId);
       setShow(false);
     });
@@ -238,8 +242,6 @@ const Analytics = ({ habit, setHabitData }) => {
         currentSteak += 1;
       }
     }
-
-    console.log('...', currentSteak);
     return currentSteak;
   };
   calculateCurrentStreak();
